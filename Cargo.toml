@@ -1,0 +1,34 @@
+[package]
+name = "testy"
+version = "0.1.0"
+authors = ["Skellora <pascal_noel@hotmail.com>"]
+
+[lib]
+crate-type = ["cdylib"]
+
+[dependencies]
+failure = "0.1.2"
+specs="*"
+nalgebra = "0.16.0"
+ncollide2d = "0.17.0"
+nphysics2d="0.9"
+
+[dependencies.wasm-bindgen]
+git = "https://github.com/rustwasm/wasm-bindgen"
+[dependencies.js-sys]
+git = "https://github.com/rustwasm/wasm-bindgen"
+[dependencies.web-sys]
+git = "https://github.com/rustwasm/wasm-bindgen"
+features = [
+  'Document',
+  'Element',
+  'HtmlElement',
+  'Node',
+  'HtmlCanvasElement',
+  'WebGlBuffer',
+  'WebGlRenderingContext',
+  'WebGlProgram',
+  'WebGlShader',
+  'Window',
+]
+
