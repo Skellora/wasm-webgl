@@ -12,7 +12,9 @@ use web_sys::{WebGlProgram, WebGlRenderingContext, WebGlShader};
 
 mod render;
 use render::*;
+#[cfg(target_arch = "wasm32")]
 mod webgl_renderer;
+#[cfg(target_arch = "wasm32")]
 use webgl_renderer::*;
 
 #[wasm_bindgen]
@@ -25,9 +27,14 @@ pub fn greet(name: &str) {
     alert(&format!("Hello, {}!", name));
 }
 
+#[cfg(target_arch = "wasm32")]
+type R = WebGlRenderer;
 
+pub fn get_renderer() -> RenderResult<Box<R>> {
+    Renderer::new()
+}
 
-
+#[cfg(target_arch = "wasm32")]
 #[wasm_bindgen]
 pub fn run() {
     let renderer = WebGlRenderer::new().unwrap();
