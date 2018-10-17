@@ -12,7 +12,7 @@ pub enum RenderError {
     #[fail(display = "Could not cast an element to {}", 0)]
     CouldNotCast(String),
     #[fail(display = "JS had something to say {:?}", 0)]
-    JsValueError(JsValue),
+    JsValueError(String),
     #[fail(display = "Buffer create error")]
     BufferCreateError,
 }
@@ -65,7 +65,7 @@ impl Renderer for WebGlRenderer {
 
         let context = canvas
             .get_context("webgl")
-            .map_err(|js| RenderError::JsValueError(js))?
+            .map_err(|js| RenderError::JsValueError(format!("{:?}", js)))?
             .ok_or(RenderError::MissingElement("webgo".to_owned()))?
             .dyn_into::<WebGlRenderingContext>()
             .map_err(|_| RenderError::CouldNotCast("WebGlRenderingContext".to_owned()))
