@@ -54,7 +54,7 @@ pub fn run() {
         attribute vec4 position;
         uniform mat4 model;
         void main() {
-            gl_Position = model * vec4(position, 1.0);
+            gl_Position = model * position;
         }
     "#;
     let fragment_source = r#"
