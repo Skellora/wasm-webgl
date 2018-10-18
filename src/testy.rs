@@ -42,13 +42,13 @@ impl<'a> System<'a> for SysA {
             if pos.y > 1.0 {
                 pos.y = -1.0;
             }
-            alert(&format!("{:?}", pos));
+            alert(&format!("Pos: {:?}", pos));
         }
     }
 }
 
 pub fn run() {
-    let renderer = WebGlRenderer::new().unwrap();
+    let renderer = WebGlRenderer::new().expect("WebGlRenderer");
 
     let vertex_source = r#"
         attribute vec4 position;
@@ -63,11 +63,11 @@ pub fn run() {
         }
     "#;
 
-    renderer.link_and_use_program(vertex_source, fragment_source).unwrap();
+    let program = renderer.link_and_use_program(vertex_source, fragment_source).expect("link_and_use_program");
 
     let vertices = [-0.7, -0.7, 0.0, 0.7, -0.7, 0.0, 0.0, 0.7, 0.0];
 
-    let buffer = renderer.create_buffer().unwrap();
+    let buffer = renderer.create_buffer().expect("create_buffer");
     renderer.bind_buffer(BufferType::Array, &buffer);
     renderer.buffer_data(
         BufferType::Array,
