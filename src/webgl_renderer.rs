@@ -3,7 +3,7 @@ use wasm_bindgen::prelude::*;
 use wasm_bindgen::JsCast;
 use web_sys::{self, WebGlProgram, WebGlRenderingContext, WebGlShader};
 
-use render::{ Renderer, RenderResult, BufferType, BufferDataType, DataType, ClearMask, DrawMode };
+use render::{ Renderer, Program, RenderResult, BufferType, BufferDataType, DataType, ClearMask, DrawMode };
 
 #[derive(Debug, Fail)]
 pub enum RenderError {
@@ -15,6 +15,8 @@ pub enum RenderError {
     JsValueError(String),
     #[fail(display = "Buffer create error")]
     BufferCreateError,
+    #[fail(display = "Could not fibd uniform {}", 0)]
+    UniformNotFound(String),
 }
 
 pub struct WebGlRenderer {
@@ -50,6 +52,7 @@ fn draw_mode_to_web_sys_type(draw_mode: DrawMode) -> u32 {
 
 impl Renderer for WebGlRenderer {
     type Buffer = web_sys::WebGlBuffer;
+    type Program = WebGlProgram;
     fn new() -> RenderResult<Box<Self>> {
         let document = 
               web_sys::window()
@@ -77,7 +80,7 @@ impl Renderer for WebGlRenderer {
         
     }
 
-    fn link_and_use_program(&self, vertex_source: &str, fragment_source: &str) -> RenderResult<()> {
+    fn link_and_use_program(&self, vertex_source: &str, fragment_source: &str) -> RenderResult<WebGlProgram> {
         let vert_shader = compile_shader(
             &self.context,
             WebGlRenderingContext::VERTEX_SHADER,
@@ -90,7 +93,7 @@ impl Renderer for WebGlRenderer {
         ).unwrap();
         let program = link_program(&self.context, [vert_shader, frag_shader].iter()).unwrap();
         self.context.use_program(Some(&program));
-        Ok(())
+        Ok(program)
     }
 
     fn create_buffer(&self) -> RenderResult<web_sys::WebGlBuffer> {
@@ -123,6 +126,12 @@ impl Renderer for WebGlRenderer {
         self.context.enable_vertex_attrib_array(index)
     }
 
+    fn set_uniform_mat4(&self, program: &Self::Program, name: &str, data: &mut [f32]) -> RenderResult<()> {
+        let loc = self.context.get_uniform_location(program, name).ok_or(RenderError::UniformNotFound(name.to_owned()))?;
+        self.context.uniform_matrix4fv_with_f32_array(Some(&loc), false, data);
+        Ok(())
+    }
+
     fn clear_color(&self, red: f32, green: f32, blue: f32, alpha: f32) {
         self.context.clear_color(red, green, blue, alpha)
     }
@@ -134,6 +143,10 @@ impl Renderer for WebGlRenderer {
     fn draw_arrays(&self, mode: DrawMode, first: i32, count: i32) {
         self.context.draw_arrays(draw_mode_to_web_sys_type(mode), first, count)
     }
+}
+
+impl Program for WebGlProgram {
+    fn f() {}
 }
 
 pub fn compile_shader(
