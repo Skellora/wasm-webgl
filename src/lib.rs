@@ -1,34 +1,24 @@
 
-#![allow(unused_variables)]
 extern crate wasm_bindgen;
 extern crate js_sys;
 extern crate web_sys;
 
-#[macro_use] extern crate failure;
+extern crate specs;
 
-use wasm_bindgen::prelude::*;
-use wasm_bindgen::JsCast;
-use web_sys::{WebGlProgram, WebGlRenderingContext, WebGlShader};
+#[macro_use] extern crate failure;
 
 mod render;
 use render::*;
-#[cfg(target_arch = "wasm32")]
 mod webgl_renderer;
 #[cfg(target_arch = "wasm32")]
-use webgl_renderer::*;
-
-#[wasm_bindgen]
-extern "C" {
-    fn alert(s: &str);
-}
-
-#[wasm_bindgen]
-pub fn greet(name: &str) {
-    alert(&format!("Hello, {}!", name));
-}
+mod testy;
 
 #[cfg(target_arch = "wasm32")]
-type R = WebGlRenderer;
+use wasm_bindgen::prelude::*;
+
+
+#[cfg(target_arch = "wasm32")]
+type R = webgl_renderer::WebGlRenderer;
 
 pub fn get_renderer() -> RenderResult<Box<R>> {
     Renderer::new()
@@ -37,40 +27,5 @@ pub fn get_renderer() -> RenderResult<Box<R>> {
 #[cfg(target_arch = "wasm32")]
 #[wasm_bindgen]
 pub fn run() {
-    let renderer = WebGlRenderer::new().unwrap();
-
-    let vertex_source = r#"
-        attribute vec4 position;
-        void main() {
-            gl_Position = position;
-        }
-    "#;
-    let fragment_source = r#"
-        void main() {
-            gl_FragColor = vec4(1.0, 1.0, 1.0, 1.0);
-        }
-    "#;
-
-    renderer.link_and_use_program(vertex_source, fragment_source).unwrap();
-
-    let vertices = [-0.7, -0.7, 0.0, 0.7, -0.7, 0.0, 0.0, 0.7, 0.0];
-
-    let buffer = renderer.create_buffer().unwrap();
-    renderer.bind_buffer(BufferType::Array, &buffer);
-    renderer.buffer_data(
-        BufferType::Array,
-        &vertices,
-        BufferDataType::Static,
-    );
-    renderer.vertex_attrib_pointer(0, 3, DataType::Float, false, 0, 0.0);
-    renderer.enable_vertex_attrib_array(0);
-
-    renderer.clear_color(0.7, 0.7, 0.3, 1.0);
-    renderer.clear(ClearMask::ColourBuffer);
-
-    renderer.draw_arrays(
-        DrawMode::Triangles,
-        0,
-        (vertices.len() / 3) as i32,
-    );
+    testy::run();
 }
