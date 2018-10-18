@@ -17,6 +17,8 @@ pub enum RenderError {
     BufferCreateError,
     #[fail(display = "Could not fibd uniform {}", 0)]
     UniformNotFound(String),
+    #[fail(display = "Something went wrong with shaders {}", 0)]
+    ShaderError(String),
 }
 
 pub struct WebGlRenderer {
@@ -85,13 +87,13 @@ impl Renderer for WebGlRenderer {
             &self.context,
             WebGlRenderingContext::VERTEX_SHADER,
             vertex_source,
-        ).unwrap();
+        ).map_err(|e| RenderError::ShaderError(format!("Vertex: {}", e)))?;
         let frag_shader = compile_shader(
             &self.context,
             WebGlRenderingContext::FRAGMENT_SHADER,
             fragment_source,
-        ).unwrap();
-        let program = link_program(&self.context, [vert_shader, frag_shader].iter()).unwrap();
+        ).map_err(|e| RenderError::ShaderError(format!("Fragment: {}", e)))?;
+        let program = link_program(&self.context, [vert_shader, frag_shader].iter()).map_err(|e| RenderError::ShaderError(format!("Program: {}", e)))?;
         self.context.use_program(Some(&program));
         Ok(program)
     }
