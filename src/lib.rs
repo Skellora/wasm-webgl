@@ -27,5 +27,12 @@ pub fn get_renderer() -> RenderResult<Box<R>> {
 #[cfg(target_arch = "wasm32")]
 #[wasm_bindgen]
 pub fn run() {
+    use std::panic;
+    panic::set_hook(Box::new(|e| {
+        web_sys::console::log_1(&format!("Behoo: {:?}", e).into());
+    }));
     testy::run();
 }
+
+#[cfg(target_arch = "wasm32")]
+pub use self::testy::greet;
