@@ -10,9 +10,7 @@ extern crate specs;
 mod render;
 use render::*;
 mod webgl_renderer;
-#[cfg(target_arch = "wasm32")]
 mod testy;
-#[cfg(target_arch = "wasm32")]
 pub use testy::*;
 
 use wasm_bindgen::prelude::*;

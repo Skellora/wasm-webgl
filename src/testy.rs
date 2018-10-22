@@ -1,6 +1,4 @@
 use wasm_bindgen::prelude::*;
-use wasm_bindgen::JsCast;
-use web_sys::{WebGlProgram, WebGlRenderingContext, WebGlShader};
 
 use specs::prelude::*;
 
@@ -39,7 +37,27 @@ impl<'a> System<'a> for SysA {
     }
 }
 
-pub fn run() {
+#[wasm_bindgen]
+pub struct WasmWrapped {
+    w: World,
+    r: Box<WebGlRenderer>,
+}
+
+#[wasm_bindgen]
+impl WasmWrapped {
+    pub fn update(&mut self) {
+        alert("Update");
+        let mut systems = vec![SysA];
+        for sys in systems.iter_mut() {
+            sys.run_now(&self.w.res);
+        }
+        self.w.maintain();
+    }
+}
+
+#[wasm_bindgen]
+pub fn init() -> WasmWrapped {
+    alert("init");
     let renderer = WebGlRenderer::new().expect("WebGlRenderer");
 
     let vertex_source = r#"
@@ -69,27 +87,39 @@ pub fn run() {
     renderer.vertex_attrib_pointer(0, 3, DataType::Float, false, 0, 0.0);
     renderer.enable_vertex_attrib_array(0);
 
-    for i in 0..10 {
+    renderer.clear_color(0.7, 0.7, 0.3, 1.0);
+    renderer.clear(ClearMask::ColourBuffer);
 
-        renderer.clear_color(0.7, 0.7, 0.3, 1.0);
-        renderer.clear(ClearMask::ColourBuffer);
+    let mut d = [
+        1.0, 0.0, 0.0, 0.0,
+        0.0, 1.0, 0.0, 0.0,
+        0.0, 0.0, 1.0, 0.0,
+        0.0, 0.0, 0.0, 1.0,
+    ];
+    renderer.set_uniform_mat4(&program, "model", &mut d).expect("set_uniform");
 
-        renderer.draw_arrays(
-            DrawMode::Triangles,
-            0,
-            (vertices.len() / 3) as i32,
-        );
-    }
+    renderer.draw_arrays(
+        DrawMode::Triangles,
+        0,
+        (vertices.len() / 3) as i32,
+    );
 
     let mut world = World::new();
     world.register::<Pos>();
 
-    let mut dispatcher = DispatcherBuilder::new().with(SysA, "sys_a", &[]).build();
-
-    dispatcher.setup(&mut world.res);
-
     // An entity may or may not contain some component.
 
     world.create_entity().with(Pos { x: 0.0, y: 0.0 }).build();
-    dispatcher.dispatch(&world.res);
+    WasmWrapped {
+        w: world,
+        r: renderer,
+    }
+}
+
+pub fn run() {
+    alert("I've begun");
+    let mut wrapped = init();
+
+
+    alert("I'm done");
 }
