@@ -7,15 +7,7 @@ use specs::prelude::*;
 use render::*;
 use webgl_renderer::*;
 
-#[wasm_bindgen]
-extern "C" {
-    fn alert(s: &str);
-}
-
-#[wasm_bindgen]
-pub fn greet(name: &str) {
-    alert(&format!("Hello, {}!", name));
-}
+use alert;
 
 #[derive(Debug)]
 struct Pos {
