@@ -39,12 +39,23 @@ impl<'a> System<'a> for SysA {
 
 #[wasm_bindgen]
 pub struct WasmWrapped {
-    w: World,
-    r: Box<WebGlRenderer>,
+    inner: Wrapped<WebGlRenderer>,
 }
 
 #[wasm_bindgen]
 impl WasmWrapped {
+    pub fn update(&mut self) {
+        self.inner.update();
+    }
+}
+
+pub struct Wrapped<T: Renderer> {
+    w: World,
+    r: Box<T>,
+    p: T::Program,
+}
+
+impl<T: Renderer> Wrapped<T> {
     pub fn update(&mut self) {
         alert("Update");
         let mut systems = vec![SysA];
@@ -111,8 +122,11 @@ pub fn init() -> WasmWrapped {
 
     world.create_entity().with(Pos { x: 0.0, y: 0.0 }).build();
     WasmWrapped {
-        w: world,
-        r: renderer,
+        inner: Wrapped {
+            w: world,
+            r: renderer,
+            p: program,
+        }
     }
 }
 
