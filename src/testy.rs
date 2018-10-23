@@ -25,12 +25,12 @@ impl<'a> System<'a> for SysA {
     fn run(&mut self, mut pos: Self::SystemData) {
         for pos in (&mut pos).join() {
             pos.x += 0.01;
-            if pos.x > 1.0 {
-                pos.x = -1.0;
+            if pos.x > 2.0 {
+                pos.x = -2.0;
             }
             pos.y += 0.01;
-            if pos.y > 1.0 {
-                pos.y = -1.0;
+            if pos.y > 2.0 {
+                pos.y = -2.0;
             }
         }
     }
@@ -85,10 +85,10 @@ impl<T: Renderer> Wrapped<T> {
         let poses = self.w.read_storage::<Pos>();
         for p in poses.join() {
             let mut d = [
-                1.0, 0.0, 0.0, p.x,
-                0.0, 1.0, 0.0, p.y,
+                1.0, 0.0, 0.0, 0.0,
+                0.0, 1.0, 0.0, 0.0,
                 0.0, 0.0, 1.0, 0.0,
-                0.0, 0.0, 0.0, 1.0,
+                p.x, p.y, 0.0, 1.0,
             ];
             self.r.set_uniform_mat4(&self.p, "model", &mut d).expect("set_uniform");
 
@@ -107,10 +107,10 @@ pub fn init() -> WasmWrapped {
     let renderer = WebGlRenderer::new().expect("WebGlRenderer");
 
     let vertex_source = r#"
-        attribute vec4 position;
+        attribute vec3 position;
         uniform mat4 model;
         void main() {
-            gl_Position = model * position;
+            gl_Position = model * vec4(position, 1.0);
         }
     "#;
     let fragment_source = r#"
